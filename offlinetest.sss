@@ -1,0 +1,95 @@
+
+dofile("include.sss");
+
+
+//
+// this program tests all the conversion global functions
+//
+//
+function main(zzz)
+{
+    Debug(3);
+
+    //EnableLog("/tmp/oofline.log", 20, 3);
+
+
+    print("--------------------------------------------------------------\n")
+    print("\n\nTesting Sleep(1000)   \n");
+    Sleep(1000);
+
+    //Log("Testing sleep");
+    //Log("Testing sleep");
+    //Log("Testing sleep");
+    //Log("Testing sleep");
+
+    print("\n\nTesting Str2num(\"32\")   \n");
+    print (Str2num("32"));
+
+    print("\n\nTesting Str2num(\"0x32\")   \n");
+    print (Str2num("0x32"));
+
+    print("\n\nTesting Arr2str([1,2,3,4,5])   \n");
+    Arr2str([1,2,3,4,5]);
+
+    print("\n\nTesting Arr2str(['1','2','3','4','5'])   \n");
+    Arr2str(['1','2','3','4','5']);
+
+    print("\n\nTesting DbgArr(['1','2','3','4','5'])   \n");
+    DbgArr(['1','2','3','4','5'], 1);
+
+    print("\n\nTesting DbgArr([1,2,3,4,0x5])   \n");
+    DbgArr([1,2,3,4,0x5], 1);
+
+    print("\n\nTesting Str2arr(\"0001020304\")   \n");
+    local out = Str2arr("0001020304");
+    //DbgArr(out, 1);
+
+    print("\n\nTesting Str2arr(\"0A0B0C0D0FFFFFF\")   \n");
+    out = Str2arr("0A0B0C0D0FFFFFF");
+    //DbgArr(out, 1);   // to print an array we use DbgArr
+
+    print("\n\nTesting Num2str(10,1)   \n");
+    out = Num2str(10,1);
+
+    print("\n\nTesting Num2str(10,2)   \n");
+    out = Num2str(10,2);
+
+    print("\n\nTesting Num2str(10,4)   \n");
+    out = Num2str(10,4);
+
+    print("\n\nTesting Num2arr(0xFFFCDD46,4)   \n");
+    var routa = Num2arr(0xFFFCDD46,4);
+    DbgArr(routa, 1);
+
+
+    print("\n\nTesting Arr2ascii([0x42,0x43,0x44,0xDD,'M','i','r','c','e','a'])   \n");
+    Arr2ascii([0x42,0x43,0x44,0xDD,'M','i','r','c','e','a']);
+
+
+    print("\n\nTesting Arr2rint([0,0,0,1],from=0,count=4)  (array to reverse-network order Integer, number of bytes) \n");
+    out = Arr2rint([0,0,0,1], 0, 4);
+
+    print("\n\nTesting Arr2rint([1,0,0,0],from=0,count=4)  (array to network order Integer, number of bytes) \n");
+    out = Arr2rint([1,0,0,0], 0, 4);
+
+    print("\n\nTesting Arr2int([0,0,0,1],0,4)  (array to network order Integer) \n");
+    out = Arr2int([0,0,0,1],0,4);
+
+    print("\n\nTesting Arr2int([1,0,0,0],0,4)  (array to network order reverse-Integer) \n");
+    out = Arr2int([1,0,0,0],0,4);
+
+    print("\n\nTesting SubArr2str([1,2,3,4,5,6,7,8,9,0],5,3)   \n");
+    SubArr2str([1,2,3,4,5,6,7,8,9,0], 5,3);
+
+    print("\n\nTesting ArrFind()[1,2,3,4,5,6,7,8],[6,7,8]   \n");
+    ArrFind([1,2,3,4,5,6,7,8],[6,7,8]);
+
+    print("\n\nTesting ArrEqual([6,7,8],[6,7,8])   \n");
+    ArrEqual([6,7,8],[6,7,8]);
+    print("\n\n\n");
+
+
+    Exit();
+}
+
+

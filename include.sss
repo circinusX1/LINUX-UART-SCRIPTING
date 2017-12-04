@@ -1,0 +1,218 @@
+/**
+    IN ORDER TO USE autocom and or autocom.exe for payment systems with ultra-C  and any other
+    payment peripherials you would need a custom license from the publisher of this software.
+*/
+
+/**
+    SETTINGS
+        global localiables accessible by
+            S.SERIAL_PORT
+        and
+            S.PHY_SERIAL
+*/
+
+S<-{
+        SERIAL_PORT = "tty://COM1,115200,8N1",
+};
+
+
+/**
+    index position in header buffers
+*/
+local CMD_IDX = 4;
+local ERR_IDX = 5;
+local HDR_LEN = 6;
+
+
+/**
+    T (transaction) commands global as in kiosoft specs document
+*/
+T<-{
+    Sale_Transaction_Request = 0x12,
+    Sale_Transaction_Response = 0x72,
+    Reversal_Transaction_Request = 0x13,
+    Reversal_Transaction_Response = 0x73,
+    Host_Download_Request = 0x14,
+    Host_Download_Response = 0x74,
+    Sync_Parameters_Request = 0x15,
+    Sync_Parameters_Response = 0x75,
+    Sw_Enable_Power_Request = 0x16,
+    Sw_Enable_Power_Response = 0x76,
+    Disable_Power_Request = 0x17,
+    Disable_Power_Response = 0x77,
+    Cancel_Transaction_Request = 0x18,
+    Cancel_Transaction_Response = 0x78,
+    Get_Device_Information_Request = 0x19,
+    Get_Device_Information_Response = 0x79,
+    Set_Device_Information_Request = 0x1A,
+    Set_Device_Information_Response = 0x7A,
+    Set_Network_Request = 0x1B,
+    Set_Network_Response = 0x7B,
+    Hw_Enable_Power_Request = 0x1C,
+    Hw_Enable_Power_Response = 0x7C
+};
+
+
+/**
+    Error codes and description as in per kiosoft documentation
+*/
+function checkError(err)
+{
+    local msgs = [ "\n Error Code = Operation completed successfully\n",
+                    "\n Error Code = Invalid length. Response package have head only.\n",
+                    "\n Error Code = The trans is cancelled by user\n",
+                    "\n Error Code = The trans communication error\n",
+                    "\n Error Code = Batch Full\n",
+                    "\n Error Code = Batch Empty\n",
+                    "\n Error Code = Invalid LRC.\n",
+                    "\n Error Code = Sale trans declined\n",
+                    "\n Error Code = Sale trans partial approve\n",
+                    "\n Error Code = Reversal trans declined\n",
+                    "\n Error Code = Init mode, don’t allow to do sale or reversal. Response package have head only.\n",
+                    "\n Error Code = Read card timeout. Response package have head only.\n",
+                    "\n Error Code = Read card failed. Response package have head only.\n",
+                    "\n Error Code = Command error.\n",
+                    "\n Error Code = Sale busy.\n",
+                    "\n Error Code = Cancel Sale Request rejected after read customer’s card info.\n",
+                    "\n Error Code = The first byte is not 0x02\n",
+                    "\n Error Code = Do host download failed\n",
+                    "\n Error Code = Sale failed\n",
+                    "\n Error Code = Set Device Information Failed\n",
+                    "\n Error Code = Set network mode failed\n",
+                    "\n Error Code = Invalid Parameter\n",
+                    "\n Error Code = Not support hardware power saving mode\n"
+            ];
+
+    switch(err)
+    {
+        case 0xFF:print(msgs[0]);return 0;
+        case 0x01:print(msgs[1]);return err;
+        case 0x02:print(msgs[2]);return err;
+        case 0x03:print(msgs[3]);return err;
+        case 0x04:print(msgs[4]);return err;
+        case 0x05:print(msgs[5]);return err;
+        case 0x06:print(msgs[6]);return err;
+        case 0x20:print(msgs[7]);return err;
+        case 0x21:print(msgs[8]);return err;
+        case 0x30:print(msgs[9]);return err;
+        case 0x31:print(msgs[10]);return err;
+        case 0x32:print(msgs[11]);return err;
+        case 0x33:print(msgs[12]);return err;
+        case 0x34:print(msgs[13]);return err;
+        case 0x35:print(msgs[14]);return err;
+        case 0x36:print(msgs[15]);return err;
+        case 0x37:print(msgs[16]);return err;
+        case 0x42:print(msgs[17]);return err;
+        case 0x43:print(msgs[18]);return err;
+        case 0x44:print(msgs[19]);return err;
+        case 0x45:print(msgs[20]);return err;
+        case 0x46:print(msgs[21]);return err;
+        case 0x47:print(msgs[22]);return err;
+        default: print("The error code '"+ err +"' Is not in specifications");
+    }
+    print("\n");
+}
+
+/**
+    This function receives the seral object, ammount in cents
+    and a timout in milliseconds
+    builds a body message of 5 bytes, with last byte 0x11
+    which is like on the spec's example. This byte would
+    make the device to beep (if...?!?!). See specs...
+*/
+function saleTransacrionReq(serial, ammount, timeout)
+{
+    /* Please rise any concerns of missing code to github issues for this repository */
+    return false;
+}
+
+/*
+    Calculate the full message CRC
+*/
+function calcLrc(barray)
+{
+    local lrc = 0;
+    /* Please rise any concerns of missing code to github issues for this repository */
+    return lrc;
+}
+
+/*
+    The header is build according to specs as
+    [0x2,LengthLobyte,LengthHiByte,Version(10),command,error,<BODY> CRC]
+*/
+function   buildMsg(comand,  body=null)
+{
+    /* Please rise any concerns of missing code to github issues for this repository */
+    local STX = [0x2];
+    return STX;
+}
+
+/**
+    This function:
+        builds the message calling function above
+        sends the message to device
+        waits for atl least 5 bytes 10 seconds
+        checks return, and check the expected code
+    Parameters:
+        serial:     the device object
+        command:    request command byte
+        response:   what to expect from device in returned buffer as command
+        body        if the enquire header has a body
+*/
+function enquire(serial, command, response, body, to=10000)
+{
+    print("<---Sending Command " +  command + " expecting:" + response + "\n");
+
+    local header = buildMsg(command,body);
+    serial.write(header);
+    local out = serial.readmin(5,to); // wait for at least 5 bytes
+    if(out != null && out.len())
+    {
+        print("\n--->Received: " + Arr2str(out) + "\n");
+        if(out.len()>=5)
+        {
+            local len = ((out[1]<<8) | out[2]);
+            print("GOT MSG LEN = " + len + "\n");
+            if(out[CMD_IDX] == response )
+            {
+                 if(out[ERR_IDX]==255)out[ERR_IDX]=0;
+                 print("::::OK EXPECTED CODE RESPONSE:" + out[CMD_IDX] + ", Error:" + out[ERR_IDX] + "\n");
+				 if(out[ERR_IDX]!=0)
+					checkError(out[ERR_IDX]);
+            }
+            else
+            {
+                print(":: Got invalid out code:" + out[CMD_IDX] + ", Error:" + out[ERR_IDX] + "\n");
+                checkError(out[ERR_IDX]);
+                                print("returned buffer=");
+                                print(Arr2str(out));
+                                print("\n");
+            }
+        }
+    }
+    return out;
+}
+
+/*
+    This function disseminates the response
+    from Get_Device_Information_Request = 0x19,
+    and prints out all parts as per specs
+*/
+function printDevInfo(arr)
+{
+	print("\r\n----------------start analysing device info----------------\r\n");
+    /* Please rise any concerns of missing code to github issues for this repository */
+    print("\r\n----------------end of device info----------------\r\n");
+}
+
+/**
+    called from saleTransacrionReq()
+    to disseminate the return payment transaction response
+    and print all the values
+*/
+function checkPayResponse(response, ammount)
+{
+    /* Please rise any concerns of missing code to github issues for this repository */
+    return false;
+}
+

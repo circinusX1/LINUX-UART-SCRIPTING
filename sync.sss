@@ -1,0 +1,67 @@
+/**
+    TO USE autocom and or autocom.exe for payment systems with ultra-C  and any other
+    payment peripherials you would need a custom license from the publisher of this software.
+*/
+
+dofile("include.sss");
+
+
+// settings for teminal ID, as in your secs for your transactions
+////   local TERMINAL_ID_SYNC = ['P','S','1','1','1','1','1','1'];  // CANADA, change 1's with valid digits as what follows TS:
+////   local TERMINAL_ID_SYNC = ['T','S','0','0','0','0','0','0'];  // USA, change 0'es with valid digits as what follows TS:
+
+
+Debug(1);
+
+/**
+    This script is to be ran only once, to setup the ultra-C device.
+        - disables power.
+        - set's network as DHCP
+        - read device info
+        - sync's parameters request
+        - host download 100 s timout
+*/
+
+function main(zzz)
+{
+    print("Starting \n");
+
+    var serial = Device(S.SERIAL_PORT, "serial", BINARY);
+    if(0 == WaitDevices(10000))
+    {
+        //
+        // disabling power
+        //
+        print("\n\n--------DISABLIING POWER \n");
+        enquire(serial, T.Disable_Power_Request, T.Disable_Power_Response, null, 5000);
+
+        //
+        // set terminal network
+        //
+		print("\n\n---------DHCP NETWORK TERMINAL \n");
+		local dhcpnet = [0x02, 0x00, 0x06, 0x10, 0x1B, 0x00, 0x30, 0x3D];
+		serial.write(dhcpnet);
+		serial.bytesexpect(5,30000);
+		var out = serial.read();
+		print("Received ----->" + Arr2str(out) + "\n");
+
+		//
+		// get device info
+		//
+		print("\n\n---------GETTING DEVIE INFO\n");
+		var devinfo = enquire(serial, T.Get_Device_Information_Request,
+									  T.Get_Device_Information_Response,null, 10000);
+        printDevInfo(devinfo);
+
+		print("\n\n---------SYNC TERMINAL: ID=" + Arr2str(TERMINAL_ID_SYNC) + "\n");
+		local body = TERMINAL_ID_SYNC;
+		enquire(serial, T.Sync_Parameters_Request, T.Sync_Parameters_Response, body, 14000);
+
+		print("\n\n----------HOST DOWNLOAD for 100 seconds \n");
+        enquire(serial T.Host_Download_Request, T.Host_Download_Response, null, 100000);
+
+    }
+    Sleep(10000);
+    return Exit();
+}
+
