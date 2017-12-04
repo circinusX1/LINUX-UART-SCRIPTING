@@ -3,11 +3,6 @@
 ### Make a payment transaction in minutes with autocom and ultra-c.kiooft scripts.
 
 ```
-/**
-    TO USE autocom and or autocom.exe for payment systems with ultra-C  and any other
-    payment peripherials you would need a custom license from the publisher of this software.
-*/
-
 dofile("include.sss");
 
 
@@ -34,35 +29,11 @@ function main(zzz)
     print("Starting \n");
 
     local serial = Device(S.SERIAL_PORT, "serial", BINARY);
-
-    print("\n\nDISABLE POWER---------------------------- \n");
     enquire(serial, T.Disable_Power_Request, T.Disable_Power_Response, null);
-    Sleep(1000);
-
-    //
-    // get device info
-    //
-    // print("\n\nGET DEVICE INFO---------------------------------\n");
-
-    local devinfo = enquire(serial, T.Get_Device_Information_Request, T.Get_Device_Information_Response,null);
-    printDevInfo(devinfo);
-
-    //
-    // sale transaction second parameter is in cents
-    // the function saleTransacrionReq() is located in include.sss script
-    //
-    print("\n\nSALE TRANSACTION 5 cents  2 minutes----------------------------\n");
     if(saleTransacrionReq(serial, 5, 120000))
     {
         print ("\n DTR 0 RTS 1  Successful Transaction\n");
-
-        //
-        // can notify the serial back, some peripherial can rely on DTR/RTS which is not used by the ultra-C
-        //
         serial.escape("DTR", 0);
-        serial.escape("RTS", 1);
-
-        // or create a file so a third party software can trigger some events
         local file = Device("file://success.txt", "file", TEXT);
         file.putsnl("success");
         Sleep(3000);
@@ -78,14 +49,15 @@ function main(zzz)
         Sleep(3000);
         file.remove();
     }
-
-    print ("\n\n ENABLE POWER SAVE ----------------------------------\n");
     enquire(serial, T.Sw_Enable_Power_Request, T.Sw_Enable_Power_Response,null);
-	Sleep(3000);
     return Exit();
 }
 
 ```
+
+
+Marius C. Dec 2017
+
 
 
 
