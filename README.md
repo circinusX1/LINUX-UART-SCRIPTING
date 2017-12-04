@@ -1,6 +1,6 @@
 ##  Monex Ultra-C and Kiosoft Software Scripted Transaction
 
-### Make a payment transaction in minutes with autocom and ultra-c.kiooft scripts.
+### Make a payment transaction in minutes with autocom and ultra-c.kiosft scripts.
 
 ```javascript
 
