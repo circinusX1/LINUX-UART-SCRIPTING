@@ -2,7 +2,8 @@
 
 ### Make a payment transaction in minutes with autocom and ultra-c.kiooft scripts.
 
-```
+```javascript
+
 dofile("include.sss");
 
 
