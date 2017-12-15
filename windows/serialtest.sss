@@ -1,0 +1,34 @@
+
+
+function main(zzz)
+{
+    Debug(3);
+
+    //
+    //   uncomment how to send data, TEXT or binary
+    //
+//    local serial = Device("tty://COM1,115200,8N1", "serial", BINARY);
+    local serial = Device("tty://COM1,115200,8N1", "serial", TEXT);
+    
+    //
+    // if device is TEXT
+    //
+    serial.putsnl("send some text to device"); // write some text
+    local out = serial.gets(10000);            // wait to read some
+    print(out + "\n");
+
+    //
+    // if device is BINARY
+    //
+    serial.write([0x1,0x4,0x10,0x5]); // write bytes array
+    out = serial.read(10000);    //wait to read some bytes array
+
+    // to print the array
+    local outstr = Arr2str(out);
+    print(outstr + "\n");
+	
+
+    Exit();
+}
+
+
