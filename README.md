@@ -60,6 +60,63 @@ function main(zzz)
 Marius C. Dec 2017
 
 
+#### Updated MArch 27 2020, Virus time
 
+Demo sript that goes over UART and brings the uboot prompt
+
+```C++
+/**
+
+  gets uboot prompt
+  */
+
+debug(3);
+local d = Device("tty:///dev/ttyUSB0,115200,8N1","usb");
+d.timeout(120000);
+
+function getboot_prompt()
+{
+    while(1)
+    {
+        local res = d.strstr(["login","Password:","root@","=>","U-Boot"])
+        switch(res)
+        {
+            case "U-Boot":
+                for(local i=0;i<4;i++){
+                    d.putsln("\r\n");
+                    sleep(100);
+                }
+                break;
+            case "login":
+                d.putsln("root")
+                break;
+            case "Password:":
+                d.putsln("root")
+                break;
+            case "root@":
+                d.putsln("reboot")
+                break;
+            case "=>":
+                return res;
+                break;
+            default:
+                break;
+        }
+    }
+    return false;
+}
+
+
+d.putsln("\r\n");
+local ret=getboot_prompt();
+if(ret!=false)
+{
+    print ("got boot"+d.buffer()+"\n");
+    sleep(5000);
+}
+
+
+
+```
 
 
