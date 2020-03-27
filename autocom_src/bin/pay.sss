@@ -1,0 +1,16 @@
+dofile("payutil.sss");
+dofile("sysinfo.sss");
+X.debug(1);
+
+
+
+
+
+local req = makeRequest(CMD.Get_Device_Information_Request);
+local test = X.arr2str(req);
+resp = ser.writeread(req);
+
+
+
+
+X.exit();

@@ -1,0 +1,10 @@
+*.user.*
+./build*
+./bin/*
+./lib/*
+*.la
+*.o
+*.exe
+*.so
+*.lib
+./*.pro.user

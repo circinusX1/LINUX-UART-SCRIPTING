@@ -1,0 +1,47 @@
+dofile("payutil.sss");
+print("Starting script \r\n");
+X.debug(1);
+local d = Device("tty://COM7,115200,8N1","out");
+d.setbinary(1);
+
+//sysinfo(d);
+
+print("Disabling power \r\n");
+local psOff = getHdr(CMD.Disable_Power_Request,null);
+d.write(psOff);
+if(d.expect(10000)==0)
+{
+    local rec = d.read(5);
+    local err= getError(rec);
+    checkError(err);
+}
+else
+{
+    print(" no response \r\n");
+}
+
+
+print("Enabling power \r\n");
+local psOn = getHdr(CMD.Sw_Enable_Power_Request,null);
+d.write(psOn);
+if(d.expect(10000)==0)
+{
+    local rec = d.read(5);
+    local err= getError(rec);
+    checkError(err);
+}
+else
+{
+    print(" no response \r\n");
+}
+
+function out(text)
+{
+    print("print out called \r\n");
+    print(out);
+}
+
+
+
+
+

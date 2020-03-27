@@ -1,0 +1,19 @@
+print("starting ccc script");
+
+
+
+
+X.debug(1);
+local d = Device("tty://COM6,115200,8N1","xout");
+d.write("\r\n");
+d.writeln("ls");
+X.sleep(-1);
+
+
+function xout( txt)
+{
+    print(">>>>>"+txt);
+    return 0;
+}
+
+

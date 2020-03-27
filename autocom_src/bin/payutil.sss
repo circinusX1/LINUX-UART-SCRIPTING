@@ -1,0 +1,299 @@
+X.debug(1)
+
+/**
+  command transactions
+*/
+CMD <-{
+     Sale_Transaction_Request = 0x12,
+     Sale_Transaction_Response = 0x72,
+     Reversal_Transaction_Request = 0x13,
+     Reversal_Transaction_Response = 0x73,
+     Host_Download_Request = 0x14,
+     Host_Download_Response = 0x74,
+     Sync_Parameters_Request = 0x15,
+     Sync_Parameters_Response = 0x75,
+     Sw_Enable_Power_Request = 0x16,
+     Sw_Enable_Power_Response = 0x76,
+     Disable_Power_Request = 0x17,
+     Disable_Power_Response = 0x77,
+     Cancel_Transaction_Request = 0x18,
+     Cancel_Transaction_Response = 0x78,
+     Get_Device_Information_Request = 0x19,
+     Get_Device_Information_Response = 0x79,
+     Set_Device_Information_Request = 0x1A,
+     Set_Device_Information_Response = 0x7A,
+     Set_Network_Request = 0x1B,
+     Set_Network_Response = 0x7B,
+     Hw_Enable_Power_Request = 0x1C,
+     Hw_Enable_Power_Response = 0x7C
+
+}
+
+/*
+ * display error text by error code
+ */
+function checkError(err)
+{
+    local msgs = [ "Operation completed successfully\n",
+                    "Invalid length. Response package have head only.\n",
+                    "The trans is cancelled by user\n",
+                    "The trans communication error\n",
+                    "Batch Full\n",
+                    "Batch Empty\n",
+                    "Invalid LRC.\n",
+                    "Sale trans declined\n",
+                    "Sale trans partial approve\n",
+                    "Reversal trans declined\n",
+                    "Init mode, don’t allow to do sale or reversal. Response package have head only.\n",
+                    "Read card timeout. Response package have head only.\n",
+                    "Read card failed. Response package have head only.\n",
+                    "Command error.\n",
+                    "Sale busy.\n",
+                    "Cancel Sale Request rejected after read customer’s card info.\n",
+                    "The first byte is not 0x02\n",
+                    "Do host download failed\n",
+                    "Sale failed\n",
+                    "Set Device Information Failed\n",
+                    "Set network mode failed\n",
+                    "Invalid Parameter\n",
+                    "Not support hardware power saving mode\n"
+            ];
+
+    switch(err)
+    {
+        case 0xFF:print(msgs[0]);return 0;
+        case 0x01:print(msgs[1]);return err;
+        case 0x02:print(msgs[2]);return err;
+        case 0x03:print(msgs[3]);return err;
+        case 0x04:print(msgs[4]);return err;
+        case 0x05:print(msgs[5]);return err;
+        case 0x06:print(msgs[6]);return err;
+        case 0x20:print(msgs[7]);return err;
+        case 0x21:print(msgs[8]);return err;
+        case 0x30:print(msgs[9]);return err;
+        case 0x31:print(msgs[10]);return err;
+        case 0x32:print(msgs[11]);return err;
+        case 0x33:print(msgs[12]);return err;
+        case 0x34:print(msgs[13]);return err;
+        case 0x35:print(msgs[14]);return err;
+        case 0x36:print(msgs[15]);return err;
+        case 0x37:print(msgs[16]);return err;
+        case 0x42:print(msgs[17]);return err;
+        case 0x43:print(msgs[18]);return err;
+        case 0x44:print(msgs[19]);return err;
+        case 0x45:print(msgs[20]);return err;
+        case 0x46:print(msgs[21]);return err;
+        case 0x47:print(msgs[22]);return err;
+    }
+}
+
+/**
+ * @brief getCommand
+ * @return command from received buffer
+ */
+function getCommand(message)
+{
+    if(message.len()>3)
+        return  message[3];
+    return 0;
+}
+
+/**
+ * @brief getError
+ * @return error from returned buffer
+ */
+function getError(message)
+{
+    if(message.len()>4)
+        return  message[4];
+    return 0;
+}
+
+/**
+ * @brief calcLrc
+ * @return CRC
+ */
+function calcLrc(barray)
+{
+    local lrc = 0;
+    local i;
+
+     print("Calc lrc for = " + barray.len() + " bytes \n");
+    for(i=0;i<barray.len();i++)
+    {
+        print(barray[i] + ",");
+        if(barray[i] != null)
+        {
+            lrc = lrc ^ barray[i];
+        }
+        else
+            print("Barray at index: " + i + " is null \n");
+    }
+    print("\n");
+    return lrc;
+}
+
+/**
+ * @brief getHdr(comand, body=null)
+ * @return array of bytes to be sent to pay system
+ */
+function   getHdr(comand,  body=null)
+{
+    local STX = [0x2];
+    //               0    1    2     3    4
+    //               Lhi  Llo  Ver   Cmd  Err
+    local MESSAGE = [0x0, 0x0, 0x10, 0x0, 0x0];
+
+    MESSAGE[3] = comand;
+    local length = MESSAGE.len();
+    if(body!=null){
+        length += body.len();
+        MESSAGE.extend(body);          // append the body if not null
+    }
+    MESSAGE[0] = length >> 8;          // put the length on 2 bytes
+    MESSAGE[1] = length & 0xFF;
+
+    local LRC = calcLrc(MESSAGE);    // calc CRC
+    MESSAGE.append(LRC);                    // append LRC
+    STX.extend(MESSAGE);                    // stx+hdr+msg_body+lrc;
+    X.arr2str(STX); // debug
+    return STX;                         // return to caller
+}
+
+
+function sysinfo(com)
+{
+    local ret;
+    local req = getHdr(CMD.Get_Device_Information_Request);
+    local test = X.arr2str(req);
+    local resp = com.writeread(req);
+    print("Sys info response has: " + resp.len() + " bytes\n");
+    if(checkError(resp) == 0)
+    {
+        if(getCommand(resp) == CMD.Get_Device_Information_Response)
+        {
+            // page 11 $11.2 @V4.7.1.pdf
+            local i = 0;
+            local body = resp.slice(5, resp.len());
+            local tags = body[i];
+            i++;
+            for(; i<tags;)
+            {
+                local tagul = body[i];
+                i++;
+                if(tagul == 1) //serial no tag
+                {
+                    local seriallen = body[i];
+                    i++;
+                    local serialstr = body.slice(i,i+seriallen);
+                    ret += X.arr2str(serialstr) + ":";
+                    i+=seriallen;//skip serial len
+                }
+                else if(tagul == 2) //app version
+                {
+                    local appverlen = body[i];
+                    i++;
+                    local appver = body.slice(i,i+appverlen);
+                    ret += X.arr2str(appver);
+                    i+=appverlen; //skip serial len
+                }
+                else
+                {
+                    ret +=  " Some error ! \n";
+                    break;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+function setTermBoutRate(rate)
+{
+    local body;
+    local body = [0x51, 0x1, 8];
+    switch(rate)
+    {
+        case 1800:
+            body[2] = '0';
+            break;
+        case 2400:
+            body[2] = '1';
+            break;
+        case 9600:
+            body[2] = '3';
+            break;
+        case 38400:
+            body[2] = '6';
+            break;
+        case 57600:
+            body[2] = '7';
+            break;
+        case 115200:
+            body[2] = '8';
+            break;
+       default:
+            break;
+    }
+    return getHdr(CMD.Set_Device_Information_Request, body);
+}
+//setTermBoutRate(9600);
+
+
+function saleTransacrionReq(ammount)
+{
+    local body = [00,00,00,00,0x11]; // inital array
+    body[0] = (ammount >> 24)&0xFF;
+    body[1] = (ammount >> 16)&0xFF
+    body[2] = (ammount >> 8)&0xFF
+    body[3] = (ammount)&0xFF
+
+    return getHdr(CMD.Sale_Transaction_Request, body);
+}
+//saleTransacrionReq(150);
+
+/**
+ * @brief setNet  13.1
+ * @return https://electricimp.com/docs/squirrel/
+ */
+function setNet(sip,smask,sgateway,sdns)
+{
+    if(sip==null)
+    {
+        local body = [0]; // dynamic
+        return getHdr(CMD.Set_Network_Request,body);
+    }
+    local body = [1,0x1e];
+    //body.extend(X.str2arr(split(sip,".")));
+    local l = X.str2arr(split(sip,"."));
+    print(l);
+    local ls = X.arr2str(l);
+    //print(ls);
+
+    body.append(0x1e);
+
+/*
+    body.extend(X.str2arr(split(smask,".")));
+    body.append(0x1e);
+
+    body.extend(X.str2arr(split(sgateway,".")));
+    body.append(0x1e);
+
+    body.extend(X.str2arr(split(sdns,".")));
+*/
+
+
+    //return getHdr(CMD.Set_Network_Request,body);
+
+}
+
+//setNet("192.168.7.55","255.255.255.0",
+  //     "192.168.7.1","114.114.114.114");
+
+
+
+
+
+
+
+//X.exit();

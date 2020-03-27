@@ -1,0 +1,34 @@
+
+//
+// connects over serial to /dev/ttyUSB0 and gets ls
+//
+Script.debug(1);
+
+//Script.printbin(a);
+
+local prx = Proxy("tty:///dev/ttyUSB0,115200,8N1","");
+/*
+prx.write("ls -l");
+prx.noout(1000);
+local l = prx.read();
+print("Received: " + l + "\r\n");
+
+prx.write("ls -l");
+*/
+local ret = prx.bread(4);
+
+print("Array length = " + ret.len() +"\r\n");
+print("Each element \r\n");
+
+for(local l=0;l<4;l++)
+{
+    print(ret[l]);
+}
+print("\nsliced \r\n");
+print (ret[3]);
+if(ret[0]==0x40)
+    print("\nequal\n");
+else
+    print("\n not equal\n");
+
+//Script.exit();
