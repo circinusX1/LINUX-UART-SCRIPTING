@@ -1,5 +1,12 @@
 ##  Monex Ultra-C and Kiosoft Software Scripted Transaction
 
+
+* Software related music:
+* 
+    * [![Found this funny video](https://ghitara.com/images/local_gith.png)](https://www.youtube.com/@AIureaSonus)
+ 
+  
+
 ### Make a payment transaction in minutes with autocom and ultra-c.kiosft scripts.
 
 ```javascript
